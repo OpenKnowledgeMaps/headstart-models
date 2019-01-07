@@ -23,4 +23,4 @@ class CORECorpus(FileCorpus):
         return raw.get("coreId")
 
     def tokenize(self, doc):
-        return " ".join([t.text for t in doc if t.is_alpha])
+        return " ".join([t.text.lower() for t in doc if t.is_alpha])

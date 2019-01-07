@@ -11,8 +11,8 @@ language_detector = LanguageDetector()
 class FileCorpus(object):
     def __init__(self, files):
         self.collections = files
-        self.langdetect = spacy.load('en_core_web_sm')
-        self.langdetect.add_pipe(language_detector)
+        self.nlp = spacy.load('en_core_web_sm')
+        self.nlp.add_pipe(language_detector)
         self.langfilter = None
 
     def set_lang_filter(self, lang):
@@ -31,22 +31,20 @@ class FileCorpus(object):
 
     def tagged_doc_stream(self, f):
         with lzma.open(f) as infile:
-            for l in infile:
-                if len(l) > 0:
-                    try:
-                        raw = json.loads(l.decode('utf-8'))
-                        text = self.extract_text(raw)
-                        tag = self.extract_tag(raw)
-                        doc = self.langdetect(text)
-                        tokens = self.tokenize(doc)
-                        if self.langfilter:
-                            if doc._.languages[0] == self.langfilter:
-                                yield TaggedDocument(tokens, [tag])
-                        else:
-                            yield TaggedDocument(tokens, [tag])
-                    except Exception as e:
-                        # print(e, tag)
-                        pass
+            raw = [json.loads(l.decode('utf-8')) for l in infile]
+            texts = [self.extract_text(r) for r in raw]
+            tags = [self.extract_tag(r) for r in raw]
+        docs = self.nlp.pipe(texts)
+        for doc, tag in zip(docs, tags):
+            try:
+                if self.langfilter:
+                    if doc._.languages[0] == self.langfilter:
+                        yield TaggedDocument(self.tokenize(doc), [tag])
+                else:
+                    yield TaggedDocument(self.tokenize(doc), [tag])
+            except Exception as e:
+                print(e, tag)
+                pass
 
     def tagged_doc_stream_from_corpus(self):
         for c in tqdm(self.collections, desc="collections from corpus"):
