@@ -1,0 +1,5 @@
+spacy
+spacy_cld
+gensim
+tqdm
+lzma
