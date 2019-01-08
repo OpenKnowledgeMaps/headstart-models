@@ -1,8 +1,5 @@
 import os
-import glob
-from corpora.core import CORECorpus
 from doc2vec.model import build_model
-import random
 
 lang = 'en'
 rawpath = "/home/chris/data/CORE/fulltext/"

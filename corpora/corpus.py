@@ -31,27 +31,21 @@ class FileCorpus(object):
     def tokenize(self, text):
         raise NotImplementedError
 
-    def tagged_docs(self, f):
+    def docs(self, f):
         with lzma.open(f) as infile:
             raw = [json.loads(l.decode('utf-8')) for l in infile]
-            texts = [self.extract_text(r) for r in raw]
-            tags = [self.extract_tag(r) for r in raw]
+        texts = [self.extract_text(r) for r in raw]
         docs = self.langdetect.pipe(texts, batch_size=1000, n_threads=5)
-        dt = [(doc, tag) for doc, tag in zip(docs, tags)
-              if (len(doc._.languages) > 0
-                  and doc._.languages[0] == self.langfilter)]
-        texts = [d.text for d, t in dt]
-        tags = [t for d, t in dt]
-        docs = self.nlp.pipe(texts, batch_size=1000, n_threads=5)
-        for doc, tag in zip(docs, tags):
-            if doc:
-                yield TaggedDocument(self.tokenize(doc), [tag])
+        docs = [doc.text for doc in docs
+                if (len(doc._.languages) > 0
+                    and doc._.languages[0] == self.langfilter)
+                ]
+        docs = self.nlp.pipe(docs, batch_size=1000, n_threads=5)
+        return "\n".join([doc.text for doc in docs])
 
-    def tagged_doc_stream_from_corpus(self):
+    def docs_from_collections(self):
         for c in tqdm(self.collections, desc="collections from corpus"):
-            docs = self.tagged_docs(c)
-            for d in docs:
-                yield d
+            yield self.docs(c)
 
 
 class DBCorpus(object):
