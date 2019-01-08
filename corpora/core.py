@@ -1,5 +1,6 @@
 import string
 import re
+import unicodedata
 from corpora.corpus import FileCorpus
 
 
@@ -16,6 +17,9 @@ class CORECorpus(FileCorpus):
         if raw.get("abstract"):
             text.append(raw.get("abstract"))
         text = ". ".join(text)
+        text = ''.join([l for l in text
+                        if unicodedata.category(str(l))[0]
+                        not in ('S', 'M', 'C')])
         return text
 
     @staticmethod
