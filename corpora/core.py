@@ -1,10 +1,5 @@
-import string
-import re
 import unicodedata
 from corpora.corpus import FileCorpus
-
-
-regex = re.compile('[%s]' % re.escape(string.punctuation))
 
 
 class CORECorpus(FileCorpus):

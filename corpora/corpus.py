@@ -2,9 +2,7 @@ import lzma
 import json
 from tqdm import tqdm
 import spacy
-from pycld2 import detect, error as pycld_error
 from spacy_cld import LanguageDetector
-from gensim.models.doc2vec import TaggedDocument
 
 language_detector = LanguageDetector()
 
@@ -33,9 +31,9 @@ class FileCorpus(object):
 
     def docs(self, f):
         with lzma.open(f) as infile:
-            raw = [json.loads(l.decode('utf-8')) for l in infile]
-        texts = [self.extract_text(r) for r in raw]
-        docs = self.langdetect.pipe(texts, batch_size=1000, n_threads=5)
+            docs = [json.loads(l.decode('utf-8')) for l in infile]
+        docs = [self.extract_text(r) for r in docs]
+        docs = self.langdetect.pipe(docs, batch_size=1000, n_threads=5)
         docs = [doc.text for doc in docs
                 if (len(doc._.languages) > 0
                     and doc._.languages[0] == self.langfilter)
