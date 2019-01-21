@@ -17,12 +17,12 @@ sess = tf.Session()
 
 # Declare model parameters
 batch_size = 500
-vocabulary_size = 10000
-generations = 100000
-model_learning_rate = 0.001
+vocabulary_size = 100000
+generations = 1000000
+model_learning_rate = 0.0001
 
-embedding_size = 300   # Word embedding size
-doc_embedding_size = 300   # Document embedding size
+embedding_size = 200   # Word embedding size
+doc_embedding_size = 200   # Document embedding size
 concatenated_size = embedding_size + doc_embedding_size
 
 num_sampled = int(batch_size/2)    # Number of negative examples to sample.
@@ -36,7 +36,7 @@ print_loss_every = 10000
 # Declare stop words
 stops = stopwords.words('english')
 print('Creating Dictionary')
-with open(os.path.join(data_folder_name, "subset_en")) as infile:
+with open(os.path.join(data_folder_name, "documents_en")) as infile:
     docs = (doc for doc in infile if len(doc.split()) > window_size)
     word2id = helpers.build_vocab(docs, vocabulary_size, stops)
     id2word = dict(zip(word2id.values(), word2id.keys()))
@@ -45,7 +45,7 @@ valid_words = ['global', 'warming', 'climate', 'change', 'science', 'fiction']
 
 
 print('Converting docs to numbers')
-with open(os.path.join(data_folder_name, "subset_en")) as infile:
+with open(os.path.join(data_folder_name, "documents_en")) as infile:
     docs = [helpers.doc2ids(doc, word2id) for doc in infile]
 docs = [doc for doc in docs if len(doc) > window_size]
 # Get validation word keys
@@ -105,7 +105,7 @@ similarity = tf.matmul(valid_embeddings, normalized_embeddings, transpose_b=True
 saver = tf.train.Saver({"embeddings": embeddings, "doc_embeddings": doc_embeddings})
 
 # Add variable initializer.
-init = tf.initialize_all_variables()
+init = tf.global_variables_initializer()
 sess.run(init)
 
 # Run the skip gram model.
